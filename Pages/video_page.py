@@ -8,33 +8,6 @@ class VideoPage:
         self.video_path = video_path
         self.cap = cv2.VideoCapture(video_path)
 
-    # def check_video_stuck(self, threshold_sec=6):
-    #     fps = self.cap.get(cv2.CAP_PROP_FPS) or 25
-    #     stuck_frames = 0
-    #     prev_frame = None
-    #     total_frames = int(self.cap.get(cv2.CAP_PROP_FRAME_COUNT))
-
-    #     for i in range(total_frames):
-    #         ret, frame = self.cap.read()
-    #         if not ret:
-    #             break
-
-    #         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-
-    #         if prev_frame is not None:
-    #             score = ssim(gray, prev_frame)
-    #             if score > 0.995:
-    #                 stuck_frames += 1
-    #             else:
-    #                 stuck_frames = 0
-
-    #         if stuck_frames >= threshold_sec * fps:
-    #             return False, "Video is unacceptable because of stuck while streaming"
-
-    #         prev_frame = gray
-
-    #     return True, "Video is acceptable"
-
     def check_video_stuck(self, threshold_sec=6):
         cap = cv2.VideoCapture(self.video_path)
         fps = cap.get(cv2.CAP_PROP_FPS) or 25
@@ -61,36 +34,7 @@ class VideoPage:
         cap.release()
         return True, "Video is acceptable"
 
-
-    # def check_blank_screen(self, threshold_sec=6):
-    #     fps = self.cap.get(cv2.CAP_PROP_FPS) or 25
-    #     blank_frames = 0
-    #     self.cap.set(cv2.CAP_PROP_POS_FRAMES, 0)
-    #     total_frames = int(self.cap.get(cv2.CAP_PROP_FRAME_COUNT))
-
-    #     for i in range(total_frames):
-    #         ret, frame = self.cap.read()
-    #         if not ret:
-    #             break
-
-    #         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-
-    #     # Check if almost all pixels are black or white
-    #         black_ratio = np.sum(gray < 15) / gray.size
-    #         white_ratio = np.sum(gray > 240) / gray.size
-
-    #         if black_ratio > 0.95 or white_ratio > 0.95:
-    #             blank_frames += 1
-    #         else:
-    #             blank_frames = 0
-
-    #         if blank_frames >= threshold_sec * fps:
-    #             return False, "Video is unacceptable because of white/black screen while streaming"
-
-    #     return True, "Screen check passed"
-
     def check_blank_screen(self, threshold_sec=6):
-    # Create a fresh capture so it starts from the first frame
         cap = cv2.VideoCapture(self.video_path)
         fps = cap.get(cv2.CAP_PROP_FPS) or 25
         blank_frames = 0
@@ -103,7 +47,6 @@ class VideoPage:
 
             gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
-            # Check if almost all pixels are black or white
             black_ratio = np.sum(gray < 15) / gray.size
             white_ratio = np.sum(gray > 240) / gray.size
 
@@ -137,17 +80,14 @@ class VideoPage:
 
 
     def validate_video(self):
-    # Check blank/white/black screen first
         screen_status, msg = self.check_blank_screen()
         if not screen_status:
             return False, msg
 
-    # Then check stuck frames
         video_status, msg = self.check_video_stuck()
         if not video_status:
             return False, msg
 
-    # Then check audio
         audio_status, msg = self.check_audio()
         if not audio_status:
             return False, msg
